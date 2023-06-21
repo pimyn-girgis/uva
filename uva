@@ -1,0 +1,52 @@
+#!/bin/zsh
+
+cpp=$HOME$'/Documents/cpp' # main directory
+uva_pdf=$cpp$'UVA Problem PDFs' # where to store pdfs
+uva=$cpp$'/UVA' # where to store code
+uhunt_id=$'1259334' # your uHunt id
+
+if [[ $# -gt 1 ]] then
+  (( VOLUME =  $2 / 100 ))
+  (( ID = $2 ))
+fi
+
+if [[ "$1" == "submit" ]] then
+  pbcopy < $uva/$ID/$ID.${3:-cpp}
+  open "https://onlinejudge.org/index.php?option=com_onlinejudge&Itemid=25&page=submit_problem"
+  open "https://uhunt.onlinejudge.org/id/"$uhunt_id
+elif [[ "$1" == "get" ]] then
+  wget -nc -P $uva_pdf/ uva.onlinejudge.org/external/$VOLUME/$ID.pdf &> /dev/null
+  mkdir $uva/$ID &> /dev/null
+  cp -n $uva_pdf/$ID.pdf $uva/$ID/$ID.pdf 
+  if [ ! -f $uva/$ID/$ID.${3:-cpp} ]; then
+    cp -n $uva/template.${3:-cpp} $uva/$ID/$ID.${3:-cpp}
+    gsed -i 's/$1/'$ID'/g' $uva/$ID/$ID.${3:-cpp}
+    gsed -i 's/$2/'$VOLUME'/g' $uva/$ID/$ID.${3:-cpp}
+    echo "| UVA | [$ID](https://onlinejudge.org/external/$VOLUME/$ID.pdf) | [$ID.${3:-cpp}]($uva/$ID/$ID.${3:-cpp}) | ❌ |" >> $cpp/README.md
+    git add $uva/$ID/.
+    git commit -m "Added UVA $ID"
+    git push
+  fi
+  open $uva/$ID/$ID.pdf
+  nvim $uva/$ID/$ID.${3:-cpp}
+elif [[ "$1" == "debug" ]] then
+  open https://www.udebug.com/UVa/$ID
+elif [[ "$1" == "code" ]] then
+  nvim $uva/$ID/$ID.${3:-cpp}
+elif [[ "$1" == "cp" ]] then
+  pbcopy < $uva/$ID/$ID.${3:-cpp}
+elif [[ "$1" == "solved" ]] then
+  gsed -i -e '/'$2'/s/❌/✅/' $cpp/README.md
+  git add $cpp/README.md
+  git add $uva/$ID/.
+  git commit -m "Solved UVA $ID"
+  git push
+else
+  echo "Usage: uva [submit|get|debug|code|cp|solved] [id] [cpp|py|java|...]
+           submit - copies code to clipboard
+           get    - gets problem pdf and creates directory with template (if not already created)
+           debug  - opens udebug page
+           code   - opens code in nvim
+           cp     - copies code to clipboard
+           solved - marks problem as solved in README.md and commits to git"
+fi
