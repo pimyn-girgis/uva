@@ -22,10 +22,7 @@ elif [[ "$1" == "get" ]] then
     cp -n $uva/template.${3:-cpp} $uva/$ID/$ID.${3:-cpp}
     gsed -i 's/$1/'$ID'/g' $uva/$ID/$ID.${3:-cpp}
     gsed -i 's/$2/'$VOLUME'/g' $uva/$ID/$ID.${3:-cpp}
-    echo "| UVA | [$ID](https://onlinejudge.org/external/$VOLUME/$ID.pdf) | [$ID.${3:-cpp}]($uva/$ID/$ID.${3:-cpp}) | ❌ |" >> $cpp/README.md
-    git add $uva/$ID/.
-    git commit -m "Added UVA $ID"
-    git push
+    echo "| UVA | [$ID](https://onlinejudge.org/external/$VOLUME/$ID.pdf) | [$ID.${3:-cpp}](./UVA/$ID/$ID.${3:-cpp}) | ❌ |" >> $cpp/README.md
   fi
   open $uva/$ID/$ID.pdf
   nvim $uva/$ID/$ID.${3:-cpp}
